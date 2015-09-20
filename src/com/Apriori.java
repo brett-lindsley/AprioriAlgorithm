@@ -15,6 +15,8 @@ public class Apriori {
 	// Uses example from:
 	// http://www2.cs.uregina.ca/~dbd/cs831/notes/itemsets/itemset_apriori.html
 
+	DecimalFormat df = new DecimalFormat("0.00");
+
 	private int supportPercentage = 40;
 	private int confidencePercentage = 60;
 
@@ -218,21 +220,31 @@ public class Apriori {
 
 				List<String> associationSet = new LinkedList<String>(itemSet);
 				associationSet.removeAll(conditionSet);
-				for (String s : associationSet)
+				for (String s : associationSet) {
 					System.out.print(s + " ");
-				System.out.print("}  ");
+				}
+				int consequentItemsetTransactionCount = database.getNumberOfRecordsContainingAttributes(new HashSet<String>(associationSet));
+
+				System.out.print("}  C:");
 				
 				System.out.print(itemsetTransactionCount + "/" + conditionItemsetTransactionCount);
 				
 				double confidence = (double) itemsetTransactionCount / (double) conditionItemsetTransactionCount;
-				System.out.println("  --  " + confidence);
+				System.out.print(" = " + df.format(confidence));
+				
+				System.out.print(", " + itemsetTransactionCount + "/(" + 
+						conditionItemsetTransactionCount + "*" + consequentItemsetTransactionCount + ") = ");
+				
+				double lift = (double) itemsetTransactionCount / 
+						((double) conditionItemsetTransactionCount * (double) consequentItemsetTransactionCount);
+				System.out.println("L:" + df.format(lift));
 				
 				// If confidence is high enough, put in list.
 				if (itemsetTransactionCount * 100 >= confidencePercentage * conditionItemsetTransactionCount) {
 					// Sort to make display a little easier to read.
 					Collections.sort(conditionSet);
 					Collections.sort(associationSet);
-					associationRules.add(new AssociationRule(conditionSet, associationSet, confidence));
+					associationRules.add(new AssociationRule(conditionSet, associationSet, confidence, lift));
 				}
 			}
 
@@ -259,10 +271,11 @@ public class Apriori {
 	
 	private void printFinalAssociationRules(List<AssociationRule> associationRules) {
 		System.out.println("*** Final association rules with minimum confidence percentage: " + confidencePercentage);
-		NumberFormat formatter = new DecimalFormat("0.000");     
 
 		for (AssociationRule ar : associationRules) {
-			System.out.print(formatter.format(ar.getConfidence()));			
+			System.out.print("C:" + df.format(ar.getConfidence()));
+			System.out.print("  L:");
+			System.out.print(df.format(ar.getLift()));			
 			System.out.print("  {");
 			for (String s : ar.getCondition()) System.out.print(s + " ");
 			System.out.print("} ==> {");
