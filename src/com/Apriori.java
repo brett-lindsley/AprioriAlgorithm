@@ -232,10 +232,10 @@ public class Apriori {
 				double confidence = (double) itemsetTransactionCount / (double) conditionItemsetTransactionCount;
 				System.out.print(" = " + df.format(confidence));
 				
-				System.out.print(", " + itemsetTransactionCount + "/(" + 
+				System.out.print(", " + database.getTotalNumberOfTransactions() + "*" + itemsetTransactionCount + "/(" + 
 						conditionItemsetTransactionCount + "*" + consequentItemsetTransactionCount + ") = ");
 				
-				double lift = (double) itemsetTransactionCount / 
+				double lift = ((double) itemsetTransactionCount * database.getTotalNumberOfTransactions())/ 
 						((double) conditionItemsetTransactionCount * (double) consequentItemsetTransactionCount);
 				System.out.println("L:" + df.format(lift));
 				
@@ -270,9 +270,10 @@ public class Apriori {
 	}
 	
 	private void printFinalAssociationRules(List<AssociationRule> associationRules) {
-		System.out.println("*** Final association rules with minimum confidence percentage: " + confidencePercentage);
+		System.out.println("*** Final association rules with minimum confidence percentage: " + confidencePercentage + " and Lift>1");
 
 		for (AssociationRule ar : associationRules) {
+			if (ar.getLift() <= 1.0) continue;
 			System.out.print("C:" + df.format(ar.getConfidence()));
 			System.out.print("  L:");
 			System.out.print(df.format(ar.getLift()));			
